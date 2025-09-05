@@ -5,6 +5,7 @@ const agentRoutes = require('./routes/agents');
 const callRoutes = require('./routes/calls');
 const analyticsRoutes = require('./routes/analytics');
 const webhookRoutes = require('./routes/webhooks');
+const openRouterRoutes = require('./routes/openRouter');
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use('/api/agent', agentRoutes);
 app.use('/api/call', callRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/webhook', webhookRoutes);
+app.use('/api/openrouter', openRouterRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -12,6 +12,7 @@ import APIIntegration from './pages/APIIntegration';
 import KnowledgeBases from './pages/KnowledgeBases';
 import Integrations from './pages/Integrations';
 import Settings from './pages/Settings';
+import AIChatPage from './pages/AIChatPage';
 
 function AppRoutes() {
   const { user, loading } = useAuth();
@@ -41,6 +42,7 @@ function AppRoutes() {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/api-integration" element={<APIIntegration />} />
+        <Route path="/ai-chat" element={<AIChatPage />} />
       </Routes>
     </Layout>
   );

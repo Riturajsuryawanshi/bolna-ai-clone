@@ -12,7 +12,8 @@ import {
   BookOpenIcon,
   PuzzlePieceIcon,
   CogIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 
 const Layout = ({ children }) => {
@@ -24,6 +25,7 @@ const Layout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: HomeIcon },
     { name: 'Agents', href: '/agents', icon: UserGroupIcon },
+    { name: 'AI Chat', href: '/ai-chat', icon: ChatBubbleLeftRightIcon },
     { name: 'Knowledge Bases', href: '/knowledge-bases', icon: BookOpenIcon },
     { name: 'Integrations', href: '/integrations', icon: PuzzlePieceIcon },
     { name: 'Campaigns', href: '/campaigns', icon: PhoneIcon },
