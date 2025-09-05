@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  balance   Float    @default(0.0)
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // OAuth fields
+  googleId  String?
+  githubId  String?
+
+  // Relations
+  agents    Agent[]
+  providers Provider[]
+  calls     Call[]
+  messages  Message[]
+  analytics Analytics[]
+
+  @@map("users")
+}
+
+model Agent {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  status      Status   @default(INACTIVE)
+  systemPrompt String?
+  
+  // LLM Configuration
+  llmProvider String?
+  llmModel    String?
+  temperature Float?   @default(0.7)
+  
+  // Audio Configuration
+  sttProvider String?
+  ttsProvider String?
+  voice       String?
+  bufferSize  Int?     @default(100)
+  
+  // Engine Configuration
+  pipelineEngine String?
+  latencyMode    String?
+  
+  // Call Configuration
+  telephonyProvider String?
+  phoneNumber      String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  calls Call[]
+
+  @@map("agents")
+}
+
+model Provider {
+  id       String @id @default(cuid())
+  name     String
+  type     String // LLM, STT, TTS, TELEPHONY
+  apiKey   String
+  config   Json?
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name, type])
+  @@map("providers")
+}
+
+model Call {
+  id          String    @id @default(cuid())
+  status      CallStatus @default(PENDING)
+  direction   Direction
+  fromNumber  String?
+  toNumber    String?
+  duration    Int?      // in seconds
+  cost        Float?
+  transcript  String?
+  summary     String?
+  sentiment   String?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime  @default(now())
+  
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId String?
+  agent   Agent? @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  
+  // Relations
+  messages Message[]
+
+  @@map("calls")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  content   String
+  role      MessageRole
+  timestamp DateTime    @default(now())
+  
+  callId String?
+  call   Call?  @relation(fields: [callId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  date      DateTime
+  metric    String   // cost_per_minute, total_calls, success_rate, etc.
+  value     Float
+  metadata  Json?
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("analytics")
+}
+
+model KnowledgeBase {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  documents   Json[]   // Array of document metadata
+  vectorStore String?  // Pinecone/Weaviate collection ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("knowledge_bases")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+enum CallStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum Direction {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}

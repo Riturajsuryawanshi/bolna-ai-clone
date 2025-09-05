@@ -3,24 +3,25 @@ import axios from 'axios';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
 class OpenRouterService {
-  async getModels() {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/openrouter/models`);
-      return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.error || 'Failed to fetch models');
-    }
+  getModels() {
+    return {
+      models: [
+        { id: 'deepseek-v3.1', name: 'DeepSeek V3.1' },
+        { id: 'gpt-oss-120b', name: 'GPT-OSS 120B' },
+        { id: 'mistral-7b', name: 'Mistral 7B Instruct' }
+      ]
+    };
   }
 
   async chat(model, message) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/openrouter/chat`, {
+      const response = await axios.post(`${API_BASE_URL}/chat`, {
         model,
         message
       });
-      return response.data;
+      return { message: response.data.response, model };
     } catch (error) {
-      throw new Error(error.response?.data?.error || 'Failed to get AI response');
+      throw new Error(error.response?.data?.error || 'Model is currently unavailable. Please try again.');
     }
   }
 }

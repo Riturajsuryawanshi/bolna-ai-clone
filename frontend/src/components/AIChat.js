@@ -3,7 +3,7 @@ import openRouterService from '../services/openRouterService';
 
 const AIChat = () => {
   const [models, setModels] = useState([]);
-  const [selectedModel, setSelectedModel] = useState('deepseek/deepseek-v3.1');
+  const [selectedModel, setSelectedModel] = useState('deepseek-v3.1');
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,9 +18,9 @@ const AIChat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const loadModels = async () => {
+  const loadModels = () => {
     try {
-      const response = await openRouterService.getModels();
+      const response = openRouterService.getModels();
       setModels(response.models);
     } catch (err) {
       setError('Failed to load models');
@@ -37,12 +37,13 @@ const AIChat = () => {
 
     const userMessage = { role: 'user', content: inputMessage, timestamp: Date.now() };
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage('');
     setLoading(true);
     setError('');
 
     try {
-      const response = await openRouterService.chat(selectedModel, inputMessage);
+      const response = await openRouterService.chat(selectedModel, currentMessage);
       const aiMessage = { 
         role: 'assistant', 
         content: response.message, 
@@ -60,7 +61,7 @@ const AIChat = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">AI Chat with OpenRouter</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">AI Chat with Multiple Models</h2>
         
         {/* Model Selection */}
         <div className="mb-4">
@@ -70,7 +71,7 @@ const AIChat = () => {
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           >
             {models.map((model) => (
               <option key={model.id} value={model.id}>
@@ -95,16 +96,16 @@ const AIChat = () => {
             className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}
           >
             <div
-              className={`inline-block max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              className={`inline-block max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
                 message.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white text-gray-800 border border-gray-200'
+                  ? 'bg-blue-500 text-white rounded-br-sm'
+                  : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'
               }`}
             >
-              <div className="whitespace-pre-wrap">{message.content}</div>
-              {message.model && (
-                <div className="text-xs text-gray-500 mt-1">
-                  Model: {models.find(m => m.id === message.model)?.name || message.model}
+              <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
+              {message.model && message.role === 'assistant' && (
+                <div className="text-xs text-gray-400 mt-2 border-t border-gray-100 pt-2">
+                  {models.find(m => m.id === message.model)?.name || message.model}
                 </div>
               )}
             </div>
@@ -113,10 +114,10 @@ const AIChat = () => {
         
         {loading && (
           <div className="text-left mb-4">
-            <div className="inline-block bg-white text-gray-800 border border-gray-200 px-4 py-2 rounded-lg">
+            <div className="inline-block bg-white text-gray-800 border border-gray-200 px-4 py-3 rounded-lg rounded-bl-sm shadow-sm">
               <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-                AI is thinking...
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-3"></div>
+                <span className="text-sm">AI is thinking...</span>
               </div>
             </div>
           </div>
@@ -133,21 +134,21 @@ const AIChat = () => {
       )}
 
       {/* Message Input */}
-      <form onSubmit={handleSendMessage} className="flex gap-2">
+      <form onSubmit={handleSendMessage} className="flex gap-3">
         <input
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !inputMessage.trim()}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
         >
-          Send
+          {loading ? 'Sending...' : 'Send'}
         </button>
       </form>
     </div>
